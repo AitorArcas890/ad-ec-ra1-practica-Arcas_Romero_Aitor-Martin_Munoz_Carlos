@@ -7,10 +7,16 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import org.educa.entity.ProductoEntity;
+import org.educa.entity.SummaryEntity;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,8 +68,34 @@ public class ProductoService {
     }
 
     public void exportSummary(String path, String fileXml) throws JAXBException, IOException {
-        //TODO: Implementar
+        List<ProductoEntity> productos = readFile(fileXml);
 
+        File xmlFile = new File(fileXml);
+        String fileName = xmlFile.getName();
+        String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+        String mesAno = baseName.replace("inventario", "");
+        String outputFileName = "result" + mesAno + ".txt";
+
+        Path outputDir = Paths.get(path);
+        Files.createDirectories(outputDir);
+        Path outputPath = outputDir.resolve(outputFileName);
+
+        int numeroProductos = productos.size();
+        BigDecimal beneficioTotal = productos.stream()
+                .map(ProductoEntity::getProfit)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        SummaryEntity summary = new SummaryEntity(
+                mesAno,
+                numeroProductos,
+                beneficioTotal,
+                xmlFile.getAbsolutePath(),
+                baseName,
+                xmlFile.length()
+        );
+
+        Files.writeString(outputPath, summary.toPrint(), StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     public void exportExcel(String path, String fileXml) throws JAXBException, IOException, ParseException {
