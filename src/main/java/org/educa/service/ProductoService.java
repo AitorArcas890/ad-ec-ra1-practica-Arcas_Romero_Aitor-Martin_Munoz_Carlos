@@ -1,11 +1,11 @@
 package org.educa.service;
 
-import generated.Costes;
-import generated.Producto;
+
+
 import generated.Productos;
-import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Unmarshaller;
+import org.educa.dao.ProductoXmlDao;
+import org.educa.dao.ProductoXmlDaoImpl;
 import org.educa.entity.ProductoEntity;
 import org.educa.entity.SummaryEntity;
 
@@ -18,10 +18,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ProductoService {
+
+    // Instanciamos el DAO y el Handler que hemos creado
+    private final ProductoXmlDao productoXmlDao = new ProductoXmlDaoImpl();
+    private final ProductoHandler productoHandler = new ProductoHandler();
 
     /**
      * Lee un archivo XML de productos y lo convierte en una lista de productos
@@ -33,37 +36,13 @@ public class ProductoService {
 
     public List<ProductoEntity> readFile(String fileXml) throws JAXBException {
 
-        //INICIA LA CLASE QUE VA A RECOGER LOS DATOS
-        JAXBContext context = JAXBContext.newInstance(Productos.class);
-        Unmarshaller unmarshaller = context.createUnmarshaller();
-        Productos productos = (Productos) unmarshaller.unmarshal(new File(fileXml));
+        // 1. EL DAO lee el archivo XML y nos da el objeto Productos
+        Productos productos = productoXmlDao.readXml(fileXml);
 
-        List<ProductoEntity> lista = new ArrayList<>();
+        // 2. EL Handler procesa el objeto Productos, iterando y calculando cada campo
+        List<ProductoEntity> lista = productoHandler.processProductos(productos);
 
-        //ITERA TODOS LOS PRODUCTOS
-        for (Producto p : productos.getProducto()) {
-            ProductoEntity entity = new ProductoEntity();
-            entity.setProducto(p);
-
-            //RECUPERAR LOS DATOS DE LOS PRODUCTOS DE LA CLASE Producto
-            BigDecimal precio = p.getPrecio();
-            BigDecimal descuento = p.getDescuento();
-
-            //COGEMOS EL PRECIO Y LE QUITAMOS EL DESCUENTO
-            BigDecimal precioFinal = precio.subtract(descuento);
-
-            //ACTUALIZA EL PRECIO FINAL AL PRODUCTO
-            entity.setPrecioFinal(precioFinal);
-
-            Costes costes = p.getCostes();
-            BigDecimal cost = costes.getCostesEnvio().add(costes.getCostesAlmacenaje());
-            entity.setCost(cost);
-
-            BigDecimal profit = precioFinal.subtract(cost);
-            entity.setProfit(profit);
-
-            lista.add(entity);
-        }
+        // 3. Devolvemos la lista final
         return lista;
     }
 
