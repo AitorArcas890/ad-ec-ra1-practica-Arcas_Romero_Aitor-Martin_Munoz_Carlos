@@ -5,12 +5,14 @@ import generated.Costes;
 import generated.Producto;
 import generated.Productos;
 import jakarta.xml.bind.JAXBException;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.educa.dao.ProductoXmlDao;
 import org.educa.dao.ProductoXmlDaoImpl;
 import org.educa.entity.ProductoEntity;
 import org.educa.entity.SummaryEntity;
-
+import org.apache.poi.ss.usermodel.*;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -123,6 +125,47 @@ public class ProductoService {
     }
 
     public void exportExcel(String path, String fileXml) throws JAXBException, IOException, ParseException {
-        //TODO: Implementar
+
+        // llamamos al redfile para leer los datos del xml
+        List<ProductoEntity> productos = readFile(fileXml);
+
+
+        // Repetir el proceso para crear esta vez un fichero excel
+        File xmlFile = new File(fileXml);
+        String fileName = xmlFile.getName();
+        String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+        String mesAno = baseName.replace("inventario", "");
+        String outputFileName = "export_" + mesAno + ".xlsx";
+        Path outputDir = Paths.get(path);
+        Files.createDirectories(outputDir);
+        Path outputPath = outputDir.resolve(outputFileName);
+
+
+        // Usamos XSSF que es de Apache POI y permite leer y escribir excels
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+
+
+             // Abrimos el flujo para escribir el excel
+             FileOutputStream excel = new FileOutputStream(outputPath.toFile())) {
+
+            // Crea la hoja
+            Sheet sheet = workbook.createSheet("Productos");
+
+            // Array con el nombre de los headers
+            String[] headers = {
+                    "Codigo", "Numero de serie", "Precio", "Descuento",
+                    "PrecioFinal", "CostesEnvio", "CostesAlmacenaje", "Beneficio"
+            };
+
+            // Creamos la primera fila (headers) y for vamos rellenando las columnas con los nombres del array.
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+
+            workbook.write(excel);
+        }
+
     }
 }
