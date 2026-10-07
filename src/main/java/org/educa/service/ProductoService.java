@@ -164,6 +164,50 @@ public class ProductoService {
                 cell.setCellValue(headers[i]);
             }
 
+            //Rellena con datos la tabla del Excel
+
+            for (int i = 0; i < productos.size(); i++) {
+                ProductoEntity entity = productos.get(i);
+                //Recoge los datos de las clases que hay en la carpeta generated
+                generated.Producto p = entity.getProducto();
+                generated.Proveedor prov = p.getProveedor();
+
+                Row row = sheet.createRow(i + 1);
+
+                //Array de contenido
+                Object[] values = {
+                        p.getCodigo(),
+                        p.getNumeroSerie(),
+                        p.getPrecio(),
+                        p.getDescuento(),
+                        entity.getPrecioFinal(),
+                        p.getCostes().getCostesEnvio(),
+                        p.getCostes().getCostesAlmacenaje(),
+                        entity.getProfit()
+                };
+
+                //Rellena la tabla con los datos del array de contenido
+                for (int j = 0; j < values.length; j++) {
+                    Cell cell = row.createCell(j);
+                    Object val = values[j];
+                    //Conversion de tipos de datos
+                    if (val instanceof BigDecimal) {
+                        cell.setCellValue(((BigDecimal) val).doubleValue());
+                    } else if (val instanceof Integer) {
+                        cell.setCellValue((Integer) val);
+                    } else {
+                        cell.setCellValue(val.toString());
+                    }
+
+                }
+            }
+
+            //Adapta el ancho de las columnas en base al valor que va en la celda
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+
             workbook.write(excel);
         }
 
