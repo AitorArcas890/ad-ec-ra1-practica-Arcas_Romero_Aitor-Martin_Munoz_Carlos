@@ -1,0 +1,6 @@
+Fecha: _junio2026
+NumeroDeVehiculos: 5
+BeneficioTotal: 1299.24
+Ruta del Fichero: D:\Grado Superior DAM\Año 2\Acceso a Datos\Proyecto\ad-ec-ra1-practica-Arcas_Romero_Aitor-Martin_Munoz_Carlos\src\main\resources\xml\inventario_junio2026.xml
+Nombre del Fichero: inventario_junio2026
+Tamaño del Fichero: 3903 bytes

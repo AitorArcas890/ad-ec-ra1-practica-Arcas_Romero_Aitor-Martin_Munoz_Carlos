@@ -6,12 +6,17 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import org.educa.handler.ValidationHandler;
 
-import javax.xml.XMLConstants;
-import javax.xml.validation.SchemaFactory;
 import java.io.File;
 
 public class ProductoXmlDaoImpl implements ProductoXmlDao {
 
+    /**
+     * Lee un archivo XML y lo deserializa a un objeto {@link Productos}
+     *
+     * @param filePath ruta del archivo XML a leer
+     * @return objeto {@link Productos} con los datos del XML
+     * @throws JAXBException si el archivo no existe o el XML no es válido
+     */
     @Override
     public Productos readXml(String filePath) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Productos.class);
